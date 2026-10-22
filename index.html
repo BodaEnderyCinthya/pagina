@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>María & Carlos — Nuestra Boda</title>
+<style>
+:root{
+  --bg-color:#f7f5f0;
+  --text-color:#262622;
+  --accent-color:#747653;
+  --header-color:#ece8df;
+  --line-color:rgba(0,0,0,0.12);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg-color);color:var(--text-color);font-family:Georgia,'Times New Roman',serif}
+header{height:76px;display:flex;align-items:center;justify-content:space-between;padding:0 6%;background:var(--header-color);gap:24px}
+.brand{font-family:Georgia,serif;letter-spacing:.22em;text-transform:uppercase;font-size:15px;white-space:nowrap}
+nav{display:flex;gap:25px;flex-wrap:wrap;justify-content:flex-end;font-family:Arial,sans-serif}
+nav a{color:var(--text-color);text-decoration:none;font-size:13px}
+nav a:hover{color:var(--accent-color)}
+.hero{min-height:490px;display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:60px 9%;gap:28px;background:linear-gradient(110deg, var(--header-color), var(--bg-color))}
+.hero-copy{text-align:center}
+.eyebrow{letter-spacing:.32em;text-transform:uppercase;font-size:12px;font-family:Arial,sans-serif}
+h1{font:clamp(42px,5.5vw,76px)/1.08 Georgia,serif;font-weight:400;margin:24px 0;color:var(--text-color)}
+.amp{color:var(--accent-color)}
+.rule{width:120px;height:1px;background:var(--accent-color);margin:25px auto}
+.tagline{font:italic 21px Georgia,serif}
+.date{margin-top:25px;letter-spacing:.24em;font-size:12px;font-family:Arial,sans-serif;text-transform:uppercase;font-weight:bold;color:var(--accent-color)}
+.photo-placeholder{min-height:360px;border:1px solid var(--line-color);background:#e0e0e0;display:flex;align-items:end;justify-content:center;padding:20px;color:#333;text-align:center;font-size:12px;letter-spacing:.08em}
+.video-container{position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border:1px solid var(--line-color);background:#000}
+.video-container iframe{position:absolute;top:0;left:0;width:100%;height:100%}
+.quicklinks{display:grid;grid-template-columns:repeat(4,1fr);padding:34px 5%;background:#fff;gap:0;font-family:Arial,sans-serif;border-bottom:1px solid var(--line-color)}
+.quicklinks a{text-align:center;padding:12px 8px;color:var(--text-color);text-decoration:none;border-right:1px solid var(--line-color);font-size:11px;letter-spacing:.17em;text-transform:uppercase;line-height:1.8}
+.quicklinks a:last-child{border:0}
+.symbol{display:block;color:var(--accent-color);font-size:27px;margin-bottom:8px}
+section.content{max-width:1050px;margin:0 auto;padding:60px 6%}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:42px;align-items:start}
+h2{font:36px Georgia,serif;font-weight:400;margin:0 0 18px}
+p{line-height:1.75;color:var(--text-color);opacity:0.85;font-family:Arial,sans-serif;font-size:14px}
+.panel{background:#fff;padding:28px;border:1px solid var(--line-color)}
+.button{display:inline-block;padding:13px 20px;border:1px solid var(--accent-color);color:var(--text-color);text-decoration:none;margin-top:10px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-family:Arial,sans-serif;background:none;cursor:pointer;transition:all 0.2s}
+.button:hover{background:var(--accent-color);color:#fff}
+.button-primary{background:var(--accent-color);color:#fff}
+.button-primary:hover{opacity:0.9}
+
+/* Cuenta Regresiva Horizontal */
+.countdown{display:flex;gap:12px;flex-wrap:wrap;margin:24px 0;font-family:Arial,sans-serif}
+.countdown div{min-width:82px;padding:16px;background:#fff;text-align:center;border:1px solid var(--line-color);flex:1}
+.countdown strong{display:block;font:30px Georgia,serif;color:var(--accent-color)}
+.countdown span{font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+
+.map-iframe{width:100%;height:280px;border:1px solid var(--line-color);margin-top:15px}
+
+/* Contenedor Tally Recortado para Ocultar Branding */
+.panel-rsvp { background: #fff; padding: 20px 24px; border: 1px solid var(--line-color); }
+.tally-container { width: 100%; height: 420px; overflow: hidden; position: relative; }
+.tally-container iframe { width: 100%!important; height: 480px!important; border: none!important; margin-bottom: -60px; }
+
+/* Galería Visual & Grid */
+.gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+.polaroid { background: #fff; padding: 10px 10px 25px 10px; border: 1px solid var(--line-color); box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; }
+.polaroid-img { height: 130px; background: #e8e6e1; display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--accent-color); overflow: hidden; background-size: cover; background-position: center; }
+.gallery-actions { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+
+footer{text-align:center;padding:30px;background:var(--header-color);font:italic 18px Georgia,serif}
+@media(max-width:760px){header{height:auto;padding:22px 5%;align-items:flex-start;flex-direction:column}nav{gap:12px;justify-content:flex-start}.hero{grid-template-columns:1fr;padding:48px 7%}.quicklinks{grid-template-columns:repeat(2,1fr)}.quicklinks a{border-bottom:1px solid var(--line-color)}.two-col{grid-template-columns:1fr}section.content{padding:40px 7%}.countdown div{min-width:65px;padding:10px}.gallery-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">♡ Nuestra boda</div>
+  <nav aria-label="Navegación principal">
+    <a href="#inicio">Inicio</a><a href="#historia">Nuestra historia</a><a href="#detalles">Detalles</a><a href="#rsvp">Asistencia</a><a href="#galeria">Fotos</a>
+  </nav>
+</header>
+<main>
+  <section class="hero" id="inicio">
+    <div class="hero-copy">
+      <div class="eyebrow">Nos casamos</div>
+      <h1>María <span class="amp">&amp;</span><br>Carlos</h1>
+      <div class="rule"></div>
+      <div class="tagline">Una historia, un día, una vida juntos.</div>
+      <div class="date" id="displayFecha">Cargando fecha...</div>
+    </div>
+    <div class="photo-placeholder">REEMPLAZA ESTE ESPACIO CON UNA FOTO VUESTRA</div>
+  </section>
+  
+  <div class="quicklinks">
+    <a href="#rsvp"><span class="symbol">♡</span>Confirmar asistencia</a>
+    <a href="#historia"><span class="symbol">▷</span>Nuestra historia</a>
+    <a href="#detalles"><span class="symbol">⌖</span>Cómo llegar</a>
+    <a href="#galeria"><span class="symbol">◇</span>Compartir Fotos</a>
+  </div>
+
+  <section class="content two-col" id="historia">
+    <div class="photo-placeholder" style="min-height:280px">NUESTRA FOTO</div>
+    <div>
+      <h2>Nuestra historia</h2>
+      <p>Desde el primer momento, supimos que la vida juntos sería una aventura increíble.</p>
+    </div>
+  </section>
+
+  <section class="content" id="detalles">
+    <div class="panel">
+      <h2>Cuenta regresiva</h2>
+      <div class="countdown">
+        <div><strong id="cd-days">--</strong><span>Días</span></div>
+        <div><strong id="cd-hours">--</strong><span>Horas</span></div>
+        <div><strong id="cd-mins">--</strong><span>Minutos</span></div>
+        <div><strong id="cd-secs">--</strong><span>Segundos</span></div>
+      </div>
+      <h2>Ubicación y Detalles</h2>
+      <p><strong>Lugar:</strong> Hacienda Los Olivos, Panamá<br>Ceremonia: 4:00 PM<br>Recepción: 6:00 PM</p>
+      <iframe class="map-iframe" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3940.5891321!2d-79.5197!3d8.9824!2m3!1f0!1f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zOMKwNTgnNTYuNiJOIDc5wrAzMScxMC45Ilc!5e0!3m2!1ses!2spa!4v1600000000000" allowfullscreen="" loading="lazy"></iframe>
+      <br><br>
+      <a class="button" href="https://maps.google.com" target="_blank">Abrir mapa en GPS</a>
+    </div>
+  </section>
+
+  <section class="content two-col" id="rsvp">
+    <div>
+      <h2>¿Nos acompañas?</h2>
+      <p>Nos encantaría celebrar este día contigo. Por favor, confirma tu asistencia completando el formulario a continuación.</p>
+    </div>
+    <div class="panel-rsvp">
+      <h2 style="font:28px Georgia,serif; font-weight:400; margin:0 0 10px 0;">Confirmar Asistencia</h2>
+      <div class="tally-container">
+        <iframe src="https://tally.so/r/bZ5d47?transparentBackground=1" width="100%" height="480" frameborder="0" title="Confirmar Asistencia"></iframe>
+      </div>
+    </div>
+  </section>
+
+  <section class="content" id="galeria">
+    <div class="panel" style="text-align: center;">
+      <h2>Galería de Fotos del Evento</h2>
+      <p style="max-width: 600px; margin: 0 auto 30px auto;">¡Comparte tus momentos favoritos de la boda! Puedes subir tus fotografías y videos de forma instantánea sin crear cuentas ni registrarte.</p>
+      
+      <div class="gallery-grid">
+        <div class="polaroid"><div class="polaroid-img">📷</div></div>
+        <div class="polaroid"><div class="polaroid-img">🥂</div></div>
+        <div class="polaroid"><div class="polaroid-img">💍</div></div>
+      </div>
+
+      <div class="gallery-actions">
+        <a class="button button-primary" href="https://www.dropbox.com/request/soqvwesodn5564kklb27" target="_blank">📸 Subir Fotos (Sin Registro)</a>
+        <a class="button" href="https://www.dropbox.com" target="_blank">🖼️ Ver Galería Completa</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>Gracias por formar parte de nuestra historia.</footer>
+
+<script>
+const eventTargetDate = new Date("2027-01-22T04:23").getTime();
+function updateCountdown() {
+  const now = new Date().getTime();
+  const diff = eventTargetDate - now;
+  if (diff > 0) {
+    document.getElementById('cd-days').innerText = Math.floor(diff / (1000 * 60 * 60 * 24));
+    document.getElementById('cd-hours').innerText = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    document.getElementById('cd-mins').innerText = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    document.getElementById('cd-secs').innerText = Math.floor((diff % (1000 * 60)) / 1000);
+  }
+}
+setInterval(updateCountdown, 1000);
+updateCountdown();
+
+const d = new Date("2027-01-22T04:23");
+if (!isNaN(d.getTime())) {
+  document.getElementById('displayFecha').innerText = d.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+</script>
+</body>
+</html>
