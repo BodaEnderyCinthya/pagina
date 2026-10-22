@@ -1,0 +1,578 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Editor Visual — Web de Boda</title>
+<style>
+:root {
+  --ivory: #f7f5f0;
+  --ink: #262622;
+  --olive: #747653;
+  --header-bg: #ece8df;
+  --line: #d8d2c4;
+  --white: #ffffff;
+  --panel-bg: #1e1e24;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #121215; color: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+/* Header App */
+.app-header { height: 56px; background: #18181c; border-bottom: 1px solid #2d2d35; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 100; }
+.app-title { font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 8px; color: #f7f5f0; }
+.app-title span { background: #747653; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
+.app-actions { display: flex; gap: 10px; }
+.btn-app { background: #2a2a32; color: #fff; border: 1px solid #3f3f4c; padding: 8px 14px; border-radius: 6px; font-size: 13px; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+.btn-app:hover { background: #363642; }
+.btn-primary { background: #747653; border-color: #8a8c65; color: #fff; font-weight: 500; }
+.btn-primary:hover { background: #868861; }
+
+/* Layout Main */
+.app-main { flex: 1; display: grid; grid-template-columns: 400px 1fr; overflow: hidden; }
+
+/* Sidebar */
+.sidebar { background: var(--panel-bg); border-right: 1px solid #2d2d35; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+.tabs { display: flex; background: #141418; border-bottom: 1px solid #2d2d35; }
+.tab-btn { flex: 1; padding: 12px 6px; background: none; border: none; color: #8a8a9a; font-size: 11px; cursor: pointer; border-bottom: 2px solid transparent; text-align: center; }
+.tab-btn.active { color: #fff; border-bottom-color: #747653; font-weight: 600; background: #1e1e24; }
+.tab-content { flex: 1; overflow-y: auto; padding: 20px; display: none; }
+.tab-content.active { display: block; }
+
+.form-group { margin-bottom: 18px; }
+.form-group label { display: block; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #a0a0b0; margin-bottom: 6px; }
+.form-control { width: 100%; background: #282832; border: 1px solid #3f3f4c; color: #fff; padding: 10px 12px; border-radius: 6px; font-size: 13px; }
+.form-control:focus { outline: none; border-color: #747653; }
+textarea.form-control { resize: vertical; min-height: 70px; }
+.color-picker-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.color-field { display: flex; align-items: center; gap: 8px; background: #282832; padding: 6px 10px; border-radius: 6px; border: 1px solid #3f3f4c; }
+.color-field input[type="color"] { border: none; background: none; width: 30px; height: 30px; cursor: pointer; }
+.color-field span { font-size: 12px; color: #e2e8f0; }
+
+.preset-btn-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 10px; }
+.btn-preset { background: #282832; border: 1px solid #3f3f4c; color: #ccc; padding: 8px; border-radius: 6px; font-size: 11px; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 6px; }
+.btn-preset:hover { background: #32323e; color: #fff; }
+.preset-dots { display: flex; gap: 3px; }
+.preset-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+/* Preview */
+.preview-area { background: #0c0c0e; display: flex; flex-direction: column; height: 100%; }
+.preview-bar { height: 40px; background: #141418; border-bottom: 1px solid #2d2d35; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; font-size: 12px; color: #71717a; }
+.device-toggle { display: flex; gap: 4px; background: #22222a; padding: 3px; border-radius: 6px; }
+.device-btn { background: none; border: none; color: #8a8a9a; padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; }
+.device-btn.active { background: #343440; color: #fff; }
+.iframe-wrapper { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; overflow: auto; background: #08080a; }
+iframe { width: 100%; height: 100%; border: none; background: #fff; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+iframe.mobile { width: 375px; height: 667px; border-radius: 20px; border: 8px solid #222; }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="app-title">💍 Editor Visual <span>Boda</span></div>
+  <div class="app-actions">
+    <button class="btn-app" onclick="resetForm()">Restablecer</button>
+    <button class="btn-app btn-primary" onclick="downloadHTML()">📥 Descargar index.html</button>
+  </div>
+</header>
+
+<div class="app-main">
+  <aside class="sidebar">
+    <nav class="tabs">
+      <button class="tab-btn active" onclick="openTab('tab-pareja', event)">Pareja & Fecha</button>
+      <button class="tab-btn" onclick="openTab('tab-estilo', event)">Colores</button>
+      <button class="tab-btn" onclick="openTab('tab-media', event)">Fotos & Galería</button>
+      <button class="tab-btn" onclick="openTab('tab-evento', event)">Ubicación & RSVP</button>
+    </nav>
+
+    <!-- Tab 1 -->
+    <div id="tab-pareja" class="tab-content active">
+      <div class="form-group">
+        <label>Nombre Pareja 1</label>
+        <input type="text" id="nombre1" class="form-control" value="María" oninput="updatePreview()">
+      </div>
+      <div class="form-group">
+        <label>Nombre Pareja 2</label>
+        <input type="text" id="nombre2" class="form-control" value="Carlos" oninput="updatePreview()">
+      </div>
+      <div class="form-group">
+        <label>Subtítulo / Slogan</label>
+        <input type="text" id="slogan" class="form-control" value="Una historia, un día, una vida juntos." oninput="updatePreview()">
+      </div>
+      <div class="form-group">
+        <label>Fecha y Hora del Evento</label>
+        <input type="datetime-local" id="fechaEvento" class="form-control" onchange="updatePreview()">
+      </div>
+      <div class="form-group">
+        <label>Nuestra Historia (Texto)</label>
+        <textarea id="historiaTexto" class="form-control" oninput="updatePreview()">Desde el primer momento, supimos que la vida juntos sería una aventura increíble.</textarea>
+      </div>
+    </div>
+
+    <!-- Tab 2 -->
+    <div id="tab-estilo" class="tab-content">
+      <div class="form-group">
+        <label>Paleta de 4 Colores Principales</label>
+        <div class="color-picker-grid">
+          <div>
+            <span style="font-size:11px; color:#aaa;">1. Fondo Principal</span>
+            <div class="color-field">
+              <input type="color" id="colBg" value="#f7f5f0" onchange="updatePreview()">
+              <span id="colBgHex">#f7f5f0</span>
+            </div>
+          </div>
+          <div>
+            <span style="font-size:11px; color:#aaa;">2. Texto Principal</span>
+            <div class="color-field">
+              <input type="color" id="colText" value="#262622" onchange="updatePreview()">
+              <span id="colTextHex">#262622</span>
+            </div>
+          </div>
+          <div>
+            <span style="font-size:11px; color:#aaa;">3. Color de Acento</span>
+            <div class="color-field">
+              <input type="color" id="colAccent" value="#747653" onchange="updatePreview()">
+              <span id="colAccentHex">#747653</span>
+            </div>
+          </div>
+          <div>
+            <span style="font-size:11px; color:#aaa;">4. Encabezado / Pie</span>
+            <div class="color-field">
+              <input type="color" id="colHeader" value="#ece8df" onchange="updatePreview()">
+              <span id="colHeaderHex">#ece8df</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Presets Recomendados</label>
+        <div class="preset-btn-grid">
+          <button class="btn-preset" onclick="applyPreset('#f7f5f0', '#262622', '#747653', '#ece8df')">
+            <div class="preset-dots">
+              <div class="preset-dot" style="background:#f7f5f0"></div>
+              <div class="preset-dot" style="background:#262622"></div>
+              <div class="preset-dot" style="background:#747653"></div>
+              <div class="preset-dot" style="background:#ece8df"></div>
+            </div>
+            Olivo Clásico
+          </button>
+          <button class="btn-preset" onclick="applyPreset('#fcf8f6', '#2b2325', '#8c4351', '#f2e6e6')">
+            <div class="preset-dots">
+              <div class="preset-dot" style="background:#fcf8f6"></div>
+              <div class="preset-dot" style="background:#2b2325"></div>
+              <div class="preset-dot" style="background:#8c4351"></div>
+              <div class="preset-dot" style="background:#f2e6e6"></div>
+            </div>
+            Vino & Rosa
+          </button>
+          <button class="btn-preset" onclick="applyPreset('#f4f6f8', '#1a222e', '#1e3a5f', '#e2e7ec')">
+            <div class="preset-dots">
+              <div class="preset-dot" style="background:#f4f6f8"></div>
+              <div class="preset-dot" style="background:#1a222e"></div>
+              <div class="preset-dot" style="background:#1e3a5f"></div>
+              <div class="preset-dot" style="background:#e2e7ec"></div>
+            </div>
+            Azul Marino
+          </button>
+          <button class="btn-preset" onclick="applyPreset('#f5f7f5', '#212922', '#4a6b53', '#e3eae4')">
+            <div class="preset-dots">
+              <div class="preset-dot" style="background:#f5f7f5"></div>
+              <div class="preset-dot" style="background:#212922"></div>
+              <div class="preset-dot" style="background:#4a6b53"></div>
+              <div class="preset-dot" style="background:#e3eae4"></div>
+            </div>
+            Salvia
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 3 -->
+    <div id="tab-media" class="tab-content">
+      <div class="form-group">
+        <label>Tipo de portada (Hero)</label>
+        <select id="heroMediaType" class="form-control" onchange="updatePreview()">
+          <option value="image">Imagen de fondo / Foto</option>
+          <option value="youtube">Video de YouTube</option>
+        </select>
+      </div>
+      <div class="form-group" id="heroImageGroup">
+        <label>URL Imagen Portada Principal</label>
+        <input type="text" id="heroImage" class="form-control" placeholder="https://..." oninput="updatePreview()">
+        <input type="file" accept="image/*" class="form-control" style="margin-top: 5px;" onchange="handleFileUpload(this, 'heroImage')">
+      </div>
+      <div class="form-group" id="heroYoutubeGroup" style="display:none;">
+        <label>Enlace de YouTube (Portada)</label>
+        <input type="text" id="heroYoutube" class="form-control" placeholder="https://www.youtube.com/watch?v=..." oninput="updatePreview()">
+      </div>
+      <hr style="border:0; border-top:1px solid #2d2d35; margin: 20px 0;">
+      <div class="form-group">
+        <label>Foto Sección "Nuestra Historia"</label>
+        <input type="text" id="historiaImage" class="form-control" placeholder="https://..." oninput="updatePreview()">
+        <input type="file" accept="image/*" class="form-control" style="margin-top: 5px;" onchange="handleFileUpload(this, 'historiaImage')">
+      </div>
+      <hr style="border:0; border-top:1px solid #2d2d35; margin: 20px 0;">
+      <div class="form-group">
+        <label>Enlace Dropbox File Request (Para Subir Fotos)</label>
+        <input type="text" id="dropboxUrl" class="form-control" value="https://www.dropbox.com/request/soqvwesodn5564kklb27" oninput="updatePreview()">
+      </div>
+      <div class="form-group">
+        <label>URLs de Fotos para Mostrar en la Galería (1 por línea)</label>
+        <textarea id="galleryUrls" class="form-control" style="min-height:90px;" placeholder="https://ejemplo.com/foto1.jpg&#10;https://ejemplo.com/foto2.jpg" oninput="updatePreview()"></textarea>
+        <span style="font-size:10px; color:#8a8a9a;">Las imágenes se mostrarán con protección de solo vista (sin clic derecho ni descargas).</span>
+      </div>
+    </div>
+
+    <!-- Tab 4 -->
+    <div id="tab-evento" class="tab-content">
+      <div class="form-group">
+        <label>Lugar de la Ceremonia / Recepción</label>
+        <input type="text" id="lugarNombre" class="form-control" value="Hacienda Los Olivos, Panamá" oninput="updatePreview()">
+      </div>
+      <div class="form-group">
+        <label>Detalles de Horarios</label>
+        <textarea id="detallesEvento" class="form-control" oninput="updatePreview()">Ceremonia: 4:00 PM<br>Recepción: 6:00 PM</textarea>
+      </div>
+      <div class="form-group">
+        <label>Enlace Embebido Google Maps (iframe src)</label>
+        <input type="text" id="mapaEmbed" class="form-control" value="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3940.5891321!2d-79.5197!3d8.9824!2m3!1f0!1f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zOMKwNTgnNTYer3A1NiJOIDc5wrAzMScxMC45Ilc!5e0!3m2!1ses!2spa!4v1600000000000" oninput="updatePreview()">
+      </div>
+      <div class="form-group">
+        <label>Enlace Directo GPS</label>
+        <input type="text" id="mapaDirecto" class="form-control" value="https://maps.google.com" oninput="updatePreview()">
+      </div>
+      <hr style="border:0; border-top:1px solid #2d2d35; margin: 20px 0;">
+      <div class="form-group">
+        <label>Enlace Formulario Tally RSVP</label>
+        <input type="text" id="tallyUrl" class="form-control" value="https://tally.so/r/bZ5d47" oninput="updatePreview()">
+      </div>
+    </div>
+  </aside>
+
+  <main class="preview-area">
+    <div class="preview-bar">
+      <span>Vista Previa en Tiempo Real</span>
+      <div class="device-toggle">
+        <button class="device-btn active" onclick="setDevice('desktop', event)">💻 Escritorio</button>
+        <button class="device-btn" onclick="setDevice('mobile', event)">📱 Móvil</button>
+      </div>
+    </div>
+    <div class="iframe-wrapper">
+      <iframe id="previewFrame"></iframe>
+    </div>
+  </main>
+</div>
+
+<script>
+const defaultDate = new Date();
+defaultDate.setMonth(defaultDate.getMonth() + 3);
+document.getElementById('fechaEvento').value = defaultDate.toISOString().slice(0, 16);
+
+function openTab(tabId, evt) {
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+  evt.currentTarget.classList.add('active');
+  document.getElementById(tabId).classList.add('active');
+}
+
+function setDevice(type, evt) {
+  document.querySelectorAll('.device-btn').forEach(btn => btn.classList.remove('active'));
+  evt.currentTarget.classList.add('active');
+  const iframe = document.getElementById('previewFrame');
+  if (type === 'mobile') {
+    iframe.classList.add('mobile');
+  } else {
+    iframe.classList.remove('mobile');
+  }
+}
+
+function applyPreset(bg, text, accent, header) {
+  document.getElementById('colBg').value = bg;
+  document.getElementById('colText').value = text;
+  document.getElementById('colAccent').value = accent;
+  document.getElementById('colHeader').value = header;
+  updatePreview();
+}
+
+function handleFileUpload(input, targetId) {
+  const file = input.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById(targetId).value = e.target.result;
+      updatePreview();
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+function parseYouTubeURL(url) {
+  if (!url) return '';
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? 'https://www.youtube.com/embed/' + match[2] : url;
+}
+
+function generateHTML() {
+  const n1 = document.getElementById('nombre1').value || 'María';
+  const n2 = document.getElementById('nombre2').value || 'Carlos';
+  const slogan = document.getElementById('slogan').value || '';
+  const fecha = document.getElementById('fechaEvento').value;
+  const historia = document.getElementById('historiaTexto').value;
+  
+  const colBg = document.getElementById('colBg').value;
+  const colText = document.getElementById('colText').value;
+  const colAccent = document.getElementById('colAccent').value;
+  const colHeader = document.getElementById('colHeader').value;
+
+  document.getElementById('colBgHex').innerText = colBg;
+  document.getElementById('colTextHex').innerText = colText;
+  document.getElementById('colAccentHex').innerText = colAccent;
+  document.getElementById('colHeaderHex').innerText = colHeader;
+
+  const heroType = document.getElementById('heroMediaType').value;
+  const heroImg = document.getElementById('heroImage').value;
+  const heroYT = parseYouTubeURL(document.getElementById('heroYoutube').value);
+  const historiaImg = document.getElementById('historiaImage').value;
+  
+  const lugar = document.getElementById('lugarNombre').value;
+  const detalles = document.getElementById('detallesEvento').value;
+  const mapaEmbed = document.getElementById('mapaEmbed').value;
+  const mapaDirecto = document.getElementById('mapaDirecto').value;
+  const tallyUrl = document.getElementById('tallyUrl').value || 'https://tally.so/r/bZ5d47';
+  const dropboxUrl = document.getElementById('dropboxUrl').value || 'https://www.dropbox.com/request/soqvwesodn5564kklb27';
+  
+  const rawGalleryUrls = document.getElementById('galleryUrls').value.split('\n').map(u => u.trim()).filter(u => u.length > 0);
+
+  document.getElementById('heroImageGroup').style.display = heroType === 'image' ? 'block' : 'none';
+  document.getElementById('heroYoutubeGroup').style.display = heroType === 'youtube' ? 'block' : 'none';
+
+  let heroMediaHTML = '';
+  if (heroType === 'youtube' && heroYT) {
+    heroMediaHTML = `<div class="video-container"><iframe src="${heroYT}" frameborder="0" allowfullscreen></iframe></div>`;
+  } else if (heroImg) {
+    heroMediaHTML = `<div class="photo-placeholder" style="background-image: url('${heroImg}'); background-size: cover; background-position: center;"></div>`;
+  } else {
+    heroMediaHTML = `<div class="photo-placeholder">REEMPLAZA ESTE ESPACIO CON UNA FOTO VUESTRA</div>`;
+  }
+
+  let historiaMediaHTML = historiaImg 
+    ? `<div class="photo-placeholder" style="min-height:280px; background-image: url('${historiaImg}'); background-size: cover; background-position: center;"></div>`
+    : `<div class="photo-placeholder" style="min-height:280px">NUESTRA FOTO</div>`;
+
+  let galleryItemsHTML = '';
+  if (rawGalleryUrls.length > 0) {
+    galleryItemsHTML = rawGalleryUrls.map(url => `
+      <div class="protected-photo-card" oncontextmenu="return false;">
+        <div class="photo-img" style="background-image: url('${url}');"></div>
+        <div class="photo-overlay" title="Solo visualización"></div>
+      </div>
+    `).join('');
+  } else {
+    galleryItemsHTML = `
+      <div class="protected-photo-card" oncontextmenu="return false;" style="grid-column: span 2; min-height:180px; background:#e0dcd3; display:flex; align-items:center; justify-content:center; color:#666; font-size:13px;">
+        📷 Las fotos agregadas aparecerán aquí con protección de solo lectura (sin descarga)
+      </div>`;
+  }
+
+  return `<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${n1} & ${n2} — Nuestra Boda</title>
+<style>
+:root{
+  --bg-color:${colBg};
+  --text-color:${colText};
+  --accent-color:${colAccent};
+  --header-color:${colHeader};
+  --line-color:rgba(0,0,0,0.12);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;margin:0;background:var(--bg-color);color:var(--text-color);font-family:Georgia,'Times New Roman',serif}
+header{height:76px;display:flex;align-items:center;justify-content:space-between;padding:0 6%;background:var(--header-color);gap:24px}
+.brand{font-family:Georgia,serif;letter-spacing:.22em;text-transform:uppercase;font-size:15px;white-space:nowrap}
+nav{display:flex;gap:25px;flex-wrap:wrap;justify-content:flex-end;font-family:Arial,sans-serif}
+nav a{color:var(--text-color);text-decoration:none;font-size:13px}
+nav a:hover{color:var(--accent-color)}
+.hero{min-height:490px;display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:60px 9%;gap:28px;background:linear-gradient(110deg, var(--header-color), var(--bg-color))}
+.hero-copy{text-align:center}
+.eyebrow{letter-spacing:.32em;text-transform:uppercase;font-size:12px;font-family:Arial,sans-serif}
+h1{font:clamp(42px,5.5vw,76px)/1.08 Georgia,serif;font-weight:400;margin:24px 0;color:var(--text-color)}
+.amp{color:var(--accent-color)}
+.rule{width:120px;height:1px;background:var(--accent-color);margin:25px auto}
+.tagline{font:italic 21px Georgia,serif}
+.date{margin-top:25px;letter-spacing:.24em;font-size:12px;font-family:Arial,sans-serif;text-transform:uppercase;font-weight:bold;color:var(--accent-color)}
+.photo-placeholder{min-height:360px;border:1px solid var(--line-color);background:#e0e0e0;display:flex;align-items:end;justify-content:center;padding:20px;color:#333;text-align:center;font-size:12px;letter-spacing:.08em}
+.video-container{position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border:1px solid var(--line-color);background:#000}
+.video-container iframe{position:absolute;top:0;left:0;width:100%;height:100%}
+.quicklinks{display:grid;grid-template-columns:repeat(4,1fr);padding:34px 5%;background:#fff;gap:0;font-family:Arial,sans-serif;border-bottom:1px solid var(--line-color)}
+.quicklinks a{text-align:center;padding:12px 8px;color:var(--text-color);text-decoration:none;border-right:1px solid var(--line-color);font-size:11px;letter-spacing:.17em;text-transform:uppercase;line-height:1.8}
+.quicklinks a:last-child{border:0}
+.symbol{display:block;color:var(--accent-color);font-size:27px;margin-bottom:8px}
+section.content{max-width:1050px;margin:0 auto;padding:60px 6%}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:42px;align-items:start}
+h2{font:36px Georgia,serif;font-weight:400;margin:0 0 18px}
+p{line-height:1.75;color:var(--text-color);opacity:0.85;font-family:Arial,sans-serif;font-size:14px}
+.panel{background:#fff;padding:28px;border:1px solid var(--line-color)}
+.button{display:inline-block;padding:13px 20px;border:1px solid var(--accent-color);color:var(--text-color);text-decoration:none;margin-top:10px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-family:Arial,sans-serif;background:none;cursor:pointer}
+.button:hover{background:var(--accent-color);color:#fff}
+
+/* Cuenta Regresiva Horizontal */
+.countdown{display:flex;gap:12px;flex-wrap:wrap;margin:24px 0;font-family:Arial,sans-serif}
+.countdown div{min-width:82px;padding:16px;background:#fff;text-align:center;border:1px solid var(--line-color);flex:1}
+.countdown strong{display:block;font:30px Georgia,serif;color:var(--accent-color)}
+.countdown span{font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+
+.map-iframe{width:100%;height:280px;border:1px solid var(--line-color);margin-top:15px}
+
+/* Contenedor Tally Recortado Visualmente */
+.panel-rsvp { background: #fff; padding: 20px 24px; border: 1px solid var(--line-color); }
+.tally-container { width: 100%; height: 430px; overflow: hidden; margin-top: 5px; margin-bottom: -60px; }
+.tally-container iframe { width: 100%!important; height: 500px!important; border: none!important; }
+
+/* Galería Protegida (Sin Descargas) */
+.protected-gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-top: 20px; }
+.protected-photo-card { position: relative; height: 220px; border: 1px solid var(--line-color); border-radius: 4px; overflow: hidden; background: #f0f0f0; }
+.photo-img { width: 100%; height: 100%; background-size: cover; background-position: center; pointer-events: none; }
+.photo-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0); z-index: 2; cursor: default; }
+
+footer{text-align:center;padding:30px;background:var(--header-color);font:italic 18px Georgia,serif}
+@media(max-width:760px){header{height:auto;padding:22px 5%;align-items:flex-start;flex-direction:column}nav{gap:12px;justify-content:flex-start}.hero{grid-template-columns:1fr;padding:48px 7%}.quicklinks{grid-template-columns:repeat(2,1fr)}.quicklinks a{border-bottom:1px solid var(--line-color)}.two-col{grid-template-columns:1fr}section.content{padding:40px 7%}.countdown div{min-width:65px;padding:10px}}
+</style>
+</head>
+<body oncontextmenu="return false;">
+<header>
+  <div class="brand">♡ Nuestra boda</div>
+  <nav aria-label="Navegación principal">
+    <a href="#inicio">Inicio</a><a href="#historia">Nuestra historia</a><a href="#detalles">Detalles</a><a href="#rsvp">Asistencia</a><a href="#galeria">Fotos</a>
+  </nav>
+</header>
+<main>
+  <section class="hero" id="inicio">
+    <div class="hero-copy">
+      <div class="eyebrow">Nos casamos</div>
+      <h1>${n1} <span class="amp">&amp;</span><br>${n2}</h1>
+      <div class="rule"></div>
+      <div class="tagline">${slogan}</div>
+      <div class="date" id="displayFecha">Cargando fecha...</div>
+    </div>
+    ${heroMediaHTML}
+  </section>
+  
+  <div class="quicklinks">
+    <a href="#rsvp"><span class="symbol">♡</span>Confirmar asistencia</a>
+    <a href="#historia"><span class="symbol">▷</span>Nuestra historia</a>
+    <a href="#detalles"><span class="symbol">⌖</span>Cómo llegar</a>
+    <a href="#galeria"><span class="symbol">◇</span>Compartir Fotos</a>
+  </div>
+
+  <section class="content two-col" id="historia">
+    ${historiaMediaHTML}
+    <div>
+      <h2>Nuestra historia</h2>
+      <p>${historia.replace(/\n/g, '<br>')}</p>
+    </div>
+  </section>
+
+  <section class="content" id="detalles">
+    <div class="panel">
+      <h2>Cuenta regresiva</h2>
+      <div class="countdown">
+        <div><strong id="cd-days">--</strong><span>Días</span></div>
+        <div><strong id="cd-hours">--</strong><span>Horas</span></div>
+        <div><strong id="cd-mins">--</strong><span>Minutos</span></div>
+        <div><strong id="cd-secs">--</strong><span>Segundos</span></div>
+      </div>
+      <h2>Ubicación y Detalles</h2>
+      <p><strong>Lugar:</strong> ${lugar}<br>${detalles}</p>
+      ${mapaEmbed ? `<iframe class="map-iframe" src="${mapaEmbed}" allowfullscreen="" loading="lazy"></iframe>` : ''}
+      <br><br>
+      <a class="button" href="${mapaDirecto}" target="_blank">Abrir mapa en GPS</a>
+    </div>
+  </section>
+
+  <section class="content two-col" id="rsvp">
+    <div>
+      <h2>¿Nos acompañas?</h2>
+      <p>Nos encantaría celebrar este día contigo. Por favor, confirma tu asistencia completando el formulario a continuación.</p>
+    </div>
+    <div class="panel-rsvp">
+      <h2 style="font:28px Georgia,serif; font-weight:400; margin:0 0 10px 0;">Confirmar Asistencia</h2>
+      <div class="tally-container">
+        <iframe src="${tallyUrl}?transparentBackground=1" width="100%" height="500" frameborder="0" marginheight="0" marginwidth="0" title="Confirmar Asistencia"></iframe>
+      </div>
+    </div>
+  </section>
+
+  <section class="content" id="galeria">
+    <div class="panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; margin-bottom:20px;">
+        <div>
+          <h2 style="margin:0;">Galería de Recuerdos</h2>
+          <p style="margin:5px 0 0 0;">¡Mira las fotos de la boda y sube las tuyas sin necesidad de registrarte!</p>
+        </div>
+        <a class="button" href="${dropboxUrl}" target="_blank" style="margin:0; background:var(--accent-color); color:#fff;">📸 Subir Fotos Ahora</a>
+      </div>
+      
+      <div class="protected-gallery-grid">
+        ${galleryItemsHTML}
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>Gracias por formar parte de nuestra historia.</footer>
+
+<script>
+const eventTargetDate = new Date("${fecha}").getTime();
+function updateCountdown() {
+  const now = new Date().getTime();
+  const diff = eventTargetDate - now;
+  if (diff > 0) {
+    document.getElementById('cd-days').innerText = Math.floor(diff / (1000 * 60 * 60 * 24));
+    document.getElementById('cd-hours').innerText = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    document.getElementById('cd-mins').innerText = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    document.getElementById('cd-secs').innerText = Math.floor((diff % (1000 * 60)) / 1000);
+  }
+}
+setInterval(updateCountdown, 1000);
+updateCountdown();
+
+const d = new Date("${fecha}");
+if (!isNaN(d.getTime())) {
+  document.getElementById('displayFecha').innerText = d.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+<\/script>
+</body>
+</html>`;
+}
+
+function updatePreview() {
+  const html = generateHTML();
+  document.getElementById('previewFrame').srcdoc = html;
+}
+
+function resetForm() {
+  if (confirm('¿Deseas restablecer todos los campos a sus valores iniciales?')) {
+    location.reload();
+  }
+}
+
+function downloadHTML() {
+  const htmlContent = generateHTML();
+  const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'index.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+updatePreview();
+</script>
+</body>
+</html>
